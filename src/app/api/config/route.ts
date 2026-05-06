@@ -8,7 +8,7 @@ export const fetchCache = 'force-no-store';
 export const runtime = 'nodejs';
 
 // App version - update this when releasing new version
-const APP_VERSION = '0.6.53';
+const APP_VERSION = '0.6.05.26';
 const DEPLOY_ID = `deploy-${Date.now()}`;
 
 /**

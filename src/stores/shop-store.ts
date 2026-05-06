@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 // Storage version - increment this to force logout on all devices
-const STORAGE_VERSION = '0.6.54';
+const STORAGE_VERSION = '0.6.05.26';
 
 // Types
 export interface Product {
@@ -456,7 +456,7 @@ export const useShopStore = create<ShopState>()(
     {
       name: 'telegram-shop-storage',
       storage: createJSONStorage(() => localStorage),
-      version: parseInt(STORAGE_VERSION.replace(/\./g, '')), // 0.6.54 -> 654
+      version: parseInt(STORAGE_VERSION.replace(/\./g, '')), // 0.6.05.26 -> 60526
       // ONLY persist cart, favorites, and recentSearches - NOT user or isAdmin or navigation
       partialize: (state) => ({
         cart: state.cart,
