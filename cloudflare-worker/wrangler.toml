@@ -1,0 +1,17 @@
+name = "suhpay-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Routes - map suhpay.online to this worker
+# routes = [
+#   { pattern = "suhpay.online/*", zone_name = "suhpay.online" }
+# ]
+
+# Workers Sites (optional, for static assets)
+# [site]
+# bucket = "./public"
+
+# KV Namespace (optional, for caching)
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "your-kv-namespace-id"

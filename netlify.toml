@@ -1,0 +1,33 @@
+[build]
+  command = "node scripts/switch-to-postgres.mjs && prisma generate && prisma db push && next build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  BUN_VERSION = "latest"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate"
+    Pragma = "no-cache"
+    Expires = "0"
+    Surrogate-Control = "no-store"
+
+# Critical for Telegram Mini Apps - allow embedding in Telegram
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    # Telegram Mini Apps require iframe embedding - use CSP instead of X-Frame-Options
+    Content-Security-Policy = "frame-ancestors 'self' https://*.telegram.org https://t.me https://web.telegram.org;"
