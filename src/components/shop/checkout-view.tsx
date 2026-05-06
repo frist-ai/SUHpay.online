@@ -132,7 +132,7 @@ export function CheckoutView() {
   const [orderId, setOrderId] = useState('');
   const [orderTotal, setOrderTotal] = useState(0);
   const [orderDeliveryMethod, setOrderDeliveryMethod] = useState('');
-  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'success' | 'failed' | 'pending_confirmation'>('pending');
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'processing' | 'success' | 'failed' | 'pending_confirmation' | 'cancelled'>('pending');
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [paymentSettings, setPaymentSettings] = useState<PaymentSettings>(defaultPaymentSettings);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethodId | null>(null);
@@ -160,6 +160,9 @@ export function CheckoutView() {
   const containerRef = useRef<HTMLDivElement>(null);
   // Защита от двойного создания заказа — useRef для синхронной блокировки
   const submittingRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Idempotency key — unique per component mount, sent with order creation
+  const idempotencyKeyRef = useRef(crypto.randomUUID());
 
   // Fetch saved addresses and payment settings
   useEffect(() => {
@@ -357,6 +360,7 @@ export function CheckoutView() {
     // Синхронная блокировка — предотвращает двойной клик
     if (submittingRef.current) return;
     submittingRef.current = true;
+    setIsSubmitting(true);
 
     if (!user?.id) {
       toast({
@@ -364,6 +368,8 @@ export function CheckoutView() {
         title: 'Вход не выполнен',
         description: 'Откройте магазин из Telegram или режим демо (?demo), чтобы оформить заказ.',
       });
+      submittingRef.current = false;
+      setIsSubmitting(false);
       return;
     }
 
@@ -371,7 +377,10 @@ export function CheckoutView() {
     try {
       const response = await fetch('/api/orders', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Idempotency-Key': idempotencyKeyRef.current,
+        },
         body: JSON.stringify({
           initData,
           userId: user.id,
@@ -573,10 +582,11 @@ export function CheckoutView() {
         title: 'Ошибка',
         description: 'Не удалось создать заказ',
       });
+      submittingRef.current = false;
+      setIsSubmitting(false);
     } finally {
       setLoading(false);
-      // Снимаем блокировку через 2 секунды, чтобы prevent double-submit
-      setTimeout(() => { submittingRef.current = false; }, 2000);
+      // Do NOT reset submittingRef here — it resets on explicit success/failure
     }
   };
 
@@ -704,14 +714,18 @@ export function CheckoutView() {
   };
 
   const handleConfirmPayment = useCallback(async () => {
-    // Синхронная блокировка — предотвращает двойной клик «Я оплатил»
-    if (submittingRef.current) return;
-
     // For SBP / Card Transfer: order might not exist yet — create it first
+    // (handleCreateOrder manages its own submittingRef guard)
     if ((selectedPaymentMethod === 'sbp' || selectedPaymentMethod === 'cardTransfer') && !orderId) {
       await handleCreateOrder();
+      // handleCreateOrder manages its own submittingRef reset via useEffect
       return;
     }
+
+    // Синхронная блокировка — предотвращает двойной клик «Я оплатил»
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setIsSubmitting(true);
 
     if (!orderId || !orderNumber) return;
     const amountValue = orderTotal > 0 ? orderTotal : total;
@@ -809,12 +823,21 @@ export function CheckoutView() {
       });
     }
   }, [orderId, orderNumber, orderTotal, total, selectedPaymentMethod, initData, paymentSettings, transactionId]);
-  // Сбрасываем submittingRef при смене шага или оплате
+  // Сбрасываем submittingRef при достижении терминального состояния оплаты
   useEffect(() => {
-    if (paymentStatus === 'success' || paymentStatus === 'pending_confirmation' || paymentStatus === 'failed') {
+    if (paymentStatus === 'success' || paymentStatus === 'pending_confirmation' || paymentStatus === 'failed' || paymentStatus === 'cancelled') {
       submittingRef.current = false;
+      setIsSubmitting(false);
     }
   }, [paymentStatus]);
+
+  // Сбрасываем submittingRef при успешном создании заказа (orderId появился)
+  useEffect(() => {
+    if (orderId) {
+      submittingRef.current = false;
+      setIsSubmitting(false);
+    }
+  }, [orderId]);
 
   const getAddressIcon = (label: string | null) => {
     if (!label) return MapPin;
@@ -1704,7 +1727,7 @@ export function CheckoutView() {
                           </p>
                         </div>
 
-                        <Button className="w-full" size="lg" onClick={handleConfirmPayment} disabled={loading}>
+                        <Button className="w-full" size="lg" onClick={handleConfirmPayment} disabled={loading || isSubmitting}>
                           {loading ? (
                             <>
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -1747,7 +1770,7 @@ export function CheckoutView() {
                           <span className="font-medium">{paymentSettings.sbp.bankName}</span>
                         </div>
                       )}
-                      <Button className="w-full" onClick={handleConfirmPayment} disabled={paymentStatus === 'processing'}>
+                      <Button className="w-full" onClick={handleConfirmPayment} disabled={paymentStatus === 'processing' || isSubmitting}>
                         {paymentStatus === 'processing' ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -1785,7 +1808,7 @@ export function CheckoutView() {
                       {paymentSettings.cardTransfer.bankName && (
                         <p className="text-sm text-muted-foreground">Банк: {paymentSettings.cardTransfer.bankName}</p>
                       )}
-                      <Button className="w-full" onClick={handleConfirmPayment} disabled={paymentStatus === 'processing'}>
+                      <Button className="w-full" onClick={handleConfirmPayment} disabled={paymentStatus === 'processing' || isSubmitting}>
                         {paymentStatus === 'processing' ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -1821,7 +1844,7 @@ export function CheckoutView() {
                           <Copy className="h-4 w-4" />
                         </Button>
                       </div>
-                      <Button className="w-full" onClick={handleConfirmPayment} disabled={paymentStatus === 'processing'}>
+                      <Button className="w-full" onClick={handleConfirmPayment} disabled={paymentStatus === 'processing' || isSubmitting}>
                         {paymentStatus === 'processing' ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -1842,7 +1865,7 @@ export function CheckoutView() {
                         <Shield className="h-5 w-5" />
                         <span className="text-sm">Безопасная оплата</span>
                       </div>
-                      <Button className="w-full" onClick={handleConfirmPayment} disabled={paymentStatus === 'processing'}>
+                      <Button className="w-full" onClick={handleConfirmPayment} disabled={paymentStatus === 'processing' || isSubmitting}>
                         {paymentStatus === 'processing' ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -1868,7 +1891,7 @@ export function CheckoutView() {
                           {Math.ceil(total / (paymentSettings.stars.rate || 1))} ⭐
                         </p>
                       </div>
-                      <Button className="w-full" onClick={handleConfirmPayment} disabled={paymentStatus === 'processing'}>
+                      <Button className="w-full" onClick={handleConfirmPayment} disabled={paymentStatus === 'processing' || isSubmitting}>
                         {paymentStatus === 'processing' ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />

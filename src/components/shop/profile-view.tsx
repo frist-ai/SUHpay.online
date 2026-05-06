@@ -34,7 +34,6 @@ import {
   Moon,
   Sun,
   FileText,
-  LogOut,
 } from 'lucide-react';
 import { NotificationBell } from '@/components/shared/notification-bell';
 import { LoyaltyCard } from './loyalty-card';
@@ -93,7 +92,7 @@ function QuickActionButton({ icon, label, onClick, className }: QuickActionProps
 // ─── Main Profile View ─────────────────────────────────────────
 
 export function ProfileView() {
-  const { user, setUser, favorites, setCurrentView, isAdmin, logout, authMethod } = useShopStore();
+  const { user, setUser, favorites, setCurrentView, isAdmin } = useShopStore();
   const { toast } = useToast();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [themeMounted, setThemeMounted] = useState(false);
@@ -149,14 +148,6 @@ export function ProfileView() {
       setUser({ ...currentUser, photoUrl: cdnUrl });
     }
   }, [user?.telegramId, user?.photoUrl]);
-
-  // Web logout handler
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/web/logout', { method: 'POST' });
-    } catch {}
-    logout();
-  };
 
   const handleAvatarError = () => {
     if (user?.telegramId) {
@@ -948,7 +939,7 @@ export function ProfileView() {
 
           {/* ─── Version ───────────────────────────────────────── */}
           <motion.div variants={itemVariants} className="text-center text-xs text-muted-foreground py-4">
-            <p>СУХ[pay] v{appVersion} • {authMethod === 'web' ? 'Веб-версия' : 'Telegram Mini App'}</p>
+            <p>СУХ[pay] v{appVersion} • Telegram Mini App</p>
             {buildTime && (
               <p className="mt-1 opacity-70">
                 Сборка: {new Date(buildTime).toLocaleString('ru-RU')}
@@ -956,19 +947,6 @@ export function ProfileView() {
             )}
           </motion.div>
 
-          {/* ─── Logout button (web users only) ──────────────────── */}
-          {authMethod === 'web' && (
-            <motion.div variants={itemVariants}>
-              <Button
-                variant="outline"
-                className="w-full text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Выйти из аккаунта
-              </Button>
-            </motion.div>
-          )}
         </motion.div>
       </div>
     </div>

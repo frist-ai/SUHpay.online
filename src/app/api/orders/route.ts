@@ -4,6 +4,16 @@ import { addLoyaltyPoints, calculateOrderPoints, updateUserStatsAfterOrder } fro
 import { verifyUserWithCollector } from '@/lib/auth-helpers';
 import { nanoid } from 'nanoid';
 
+// In-memory idempotency key store — rejects duplicate POST requests within 5 minutes
+const recentIdempotencyKeys = new Map<string, number>(); // key -> timestamp
+// Clean up old entries every minute
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, ts] of recentIdempotencyKeys) {
+    if (now - ts > 5 * 60 * 1000) recentIdempotencyKeys.delete(key);
+  }
+}, 60 * 1000);
+
 // Demo orders data
 const DEMO_ORDERS = [
   {
@@ -244,6 +254,15 @@ export async function GET(request: NextRequest) {
 // POST /api/orders - Create new order
 export async function POST(request: NextRequest) {
   try {
+    // ── Idempotency key check: reject duplicate requests ──
+    const idempotencyKey = request.headers.get('X-Idempotency-Key');
+    if (idempotencyKey) {
+      if (recentIdempotencyKeys.has(idempotencyKey)) {
+        return NextResponse.json({ error: 'Duplicate request', duplicate: true }, { status: 409 });
+      }
+      recentIdempotencyKeys.set(idempotencyKey, Date.now());
+    }
+
     // ── Auth check: user must be authenticated ──
     const { user: authedUser, error: authError } = await verifyUserWithCollector(request);
     if (authError) return authError;

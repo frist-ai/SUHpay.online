@@ -1,6 +1,6 @@
 /**
  * Server-side authentication helpers
- * Supports both Telegram WebApp auth and Web session (cookie) auth
+ * Telegram WebApp auth only
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -22,71 +22,6 @@ async function checkAdminInDatabase(telegramId: string): Promise<boolean> {
     return adminIds.includes(telegramId);
   } catch {
     return false;
-  }
-}
-
-/**
- * Authenticate via web session cookie
- */
-async function verifySessionAuth(request: NextRequest): Promise<{
-  valid: boolean;
-  user: { id: string; telegramId: string | null; role: string; phone: string | null } | null;
-  error?: NextResponse;
-}> {
-  try {
-    const token = request.cookies.get('session_token')?.value;
-
-    if (!token || !db) {
-      return { valid: false, user: null };
-    }
-
-    const session = await db.webSession.findFirst({
-      where: {
-        token,
-        expiresAt: { gt: new Date() },
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            telegramId: true,
-            role: true,
-            phone: true,
-            blockedAt: true,
-            authType: true,
-          },
-        },
-      },
-    });
-
-    if (!session || !session.user) {
-      return { valid: false, user: null };
-    }
-
-    // Check if blocked
-    if (session.user.blockedAt) {
-      await db.webSession.deleteMany({ where: { token } });
-      return { valid: false, user: null };
-    }
-
-    // Update last visit
-    await db.user.update({
-      where: { id: session.user.id },
-      data: { lastVisitAt: new Date() },
-    });
-
-    return {
-      valid: true,
-      user: {
-        id: session.user.id,
-        telegramId: session.user.telegramId,
-        role: session.user.role,
-        phone: session.user.phone,
-      },
-    };
-  } catch (error) {
-    console.error('[auth] Session verification error:', error);
-    return { valid: false, user: null };
   }
 }
 
@@ -144,15 +79,13 @@ async function verifyTelegramAuth(request: NextRequest): Promise<{
 }
 
 /**
- * Get authenticated user from request.
- * Tries Telegram auth first, then falls back to session cookie auth.
- * Returns null if neither auth method succeeds (request continues without auth).
+ * Get authenticated user from request (Telegram auth only).
+ * Returns null if auth fails (request continues without auth).
  */
 export async function getOptionalUser(request: NextRequest): Promise<{
   user: { id: string; telegramId: string | null; role: string; phone: string | null } | null;
-  authMethod: 'telegram' | 'web' | null;
+  authMethod: 'telegram' | null;
 }> {
-  // Try Telegram auth first
   const tgResult = await verifyTelegramAuth(request);
   if (tgResult.valid && tgResult.user && tgResult.telegramId) {
     const telegramId = tgResult.telegramId;
@@ -178,27 +111,20 @@ export async function getOptionalUser(request: NextRequest): Promise<{
     };
   }
 
-  // Try session auth
-  const sessionResult = await verifySessionAuth(request);
-  if (sessionResult.valid && sessionResult.user) {
-    return { user: sessionResult.user, authMethod: 'web' };
-  }
-
   return { user: null, authMethod: null };
 }
 
 /**
- * Verify if the requesting user is authenticated (required).
- * Returns error if no auth method succeeds.
+ * Verify if the requesting user is authenticated via Telegram (required).
+ * Returns error if Telegram auth fails.
  */
 export async function verifyRequestAuth(request: NextRequest): Promise<{
   valid: boolean;
   user: { id: string; telegramId: string | null; role: string; phone: string | null } | null;
   telegramId: string | null;
-  authMethod: 'telegram' | 'web' | null;
+  authMethod: 'telegram' | null;
   error?: NextResponse;
 }> {
-  // Try Telegram auth first
   const tgResult = await verifyTelegramAuth(request);
   if (tgResult.valid && tgResult.user && tgResult.telegramId) {
     const telegramId = tgResult.telegramId;
@@ -239,19 +165,7 @@ export async function verifyRequestAuth(request: NextRequest): Promise<{
     };
   }
 
-  // Try session auth
-  const sessionResult = await verifySessionAuth(request);
-  if (sessionResult.valid && sessionResult.user) {
-    return {
-      valid: true,
-      user: sessionResult.user,
-      telegramId: sessionResult.user.telegramId,
-      authMethod: 'web',
-    };
-  }
-
-  // Neither auth method succeeded
-  // Only return error if it was specifically a Telegram auth attempt
+  // Telegram auth failed
   const hasTgHeader = request.headers.get('x-telegram-init-data');
   if (hasTgHeader && tgResult.error) {
     return {
@@ -269,7 +183,7 @@ export async function verifyRequestAuth(request: NextRequest): Promise<{
     telegramId: null,
     authMethod: null,
     error: NextResponse.json(
-      { error: 'Unauthorized - Authentication required' },
+      { error: 'Unauthorized - Telegram authentication required' },
       { status: 401 }
     ),
   };

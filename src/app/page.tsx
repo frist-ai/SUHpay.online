@@ -35,7 +35,6 @@ import { ChatManager } from '@/components/admin/chat-manager';
 import { AnalyticsManager } from '@/components/admin/analytics-manager';
 import { SettingsView } from '@/components/admin/settings-view';
 import { initTelegramWebApp, getTelegramUser, getStartParam } from '@/lib/telegram';
-import { AuthView } from '@/components/auth/auth-view';
 import '@/lib/fetch-auth'; // Global fetch interceptor — adds X-Telegram-Init-Data header to all API requests
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/toaster';
@@ -133,6 +132,14 @@ async function fetchWithRetry(
 
 // Memoized Error Screen
 function ErrorScreen({ error, onRetry }: { error: string; onRetry: () => void }) {
+  const [spinning, setSpinning] = useState(false);
+
+  const handleRetryClick = () => {
+    setSpinning(true);
+    onRetry();
+    setTimeout(() => setSpinning(false), 1000);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
       <div className="text-center space-y-6 max-w-sm">
@@ -143,8 +150,8 @@ function ErrorScreen({ error, onRetry }: { error: string; onRetry: () => void })
           <h1 className="text-2xl font-bold mb-2">Произошла ошибка</h1>
           <p className="text-muted-foreground text-sm">{error}</p>
         </div>
-        <Button onClick={onRetry} className="w-full">
-          <RefreshCw className="h-4 w-4 mr-2" />
+        <Button onClick={handleRetryClick} className="w-full">
+          <RefreshCw className={cn("h-4 w-4 mr-2", spinning && "animate-spin")} />
           Попробовать снова
         </Button>
       </div>
@@ -261,67 +268,14 @@ export default function Home() {
     setCurrentView,
     setUser,
     user,
-    authMethod,
   } = useShopStore();
 
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
-  const [isTelegram, setIsTelegram] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const initialized = useRef(false);
   
-  // ─── Web auth handlers ──────────────────────────────────────────────────
-  const handleWebLogin = useCallback(async (phone: string, password: string) => {
-    try {
-      const res = await fetch('/api/auth/web/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password }),
-      });
-      const data = await res.json();
-      
-      if (!res.ok) {
-        return { success: false, error: data.error || 'Ошибка входа' };
-      }
-      
-      setUser(data.user);
-      setIsAdmin(data.isAdmin);
-      setAuthMethod('web');
-      setIsTelegram(false);
-      return { success: true };
-    } catch {
-      return { success: false, error: 'Ошибка подключения к серверу' };
-    }
-  }, [setUser, setIsAdmin, setAuthMethod]);
-
-  const handleWebRegister = useCallback(async (data: { phone: string; password: string; firstName?: string }) => {
-    try {
-      const res = await fetch('/api/auth/web/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      const result = await res.json();
-      
-      if (!res.ok) {
-        return { success: false, error: result.error || 'Ошибка регистрации' };
-      }
-      
-      setUser(result.user);
-      setIsAdmin(result.isAdmin);
-      setAuthMethod('web');
-      setIsTelegram(false);
-      return { success: true };
-    } catch {
-      return { success: false, error: 'Ошибка подключения к серверу' };
-    }
-  }, [setUser, setIsAdmin, setAuthMethod]);
-
-  const handleOpenTelegram = useCallback(() => {
-    window.open('https://t.me/Suhpaybot?startapp=open', '_blank');
-  }, []);
-
-  // ─── Init user (check web session first, then Telegram) ───────────────
+  // ─── Init user (Telegram only) ──────────────────────────────────────────
   const initUser = useCallback(async () => {
     setError(null);
     setUser(null);
@@ -334,7 +288,6 @@ export default function Home() {
     const testTgId = urlParams.get('test_tg_id');
     
     if (demoParam !== null || testTgId) {
-      setIsTelegram(true);
       setUser({
         id: 'demo-user-id',
         telegramId: testTgId || '123456789',
@@ -362,35 +315,16 @@ export default function Home() {
       return;
     }
     
-    // ─── Step 1: Check for existing web session ───
-    try {
-      const sessionRes = await fetch('/api/auth/web/session');
-      const sessionData = await sessionRes.json();
-      
-      if (sessionData.authenticated && sessionData.user) {
-        setUser(sessionData.user);
-        setIsAdmin(sessionData.isAdmin);
-        setAuthMethod('web');
-        setIsTelegram(false);
-        setLoading(false);
-        setMounted(true);
-        return;
-      }
-    } catch {
-      // Session check failed, continue to Telegram check
-    }
-    
-    // ─── Step 2: Check for Telegram SDK ───
+    // ─── Check for Telegram SDK ───
     if (window.Telegram?.WebApp) {
       initTelegramWebApp();
     } else {
       const sdkLoaded = await waitForTelegramSDK(5000);
       
       if (!sdkLoaded) {
-        // No Telegram, no session → show auth screen
+        // No Telegram SDK → show TelegramRequiredScreen
         setLoading(false);
         setMounted(true);
-        setIsTelegram(false);
         return;
       }
       
@@ -400,15 +334,13 @@ export default function Home() {
     const tgUser = getTelegramUser();
     
     if (!tgUser) {
-      // No Telegram user → show auth screen
+      // No Telegram user → show TelegramRequiredScreen
       setLoading(false);
       setMounted(true);
-      setIsTelegram(false);
       return;
     }
     
     // ─── Telegram user found ───
-    setIsTelegram(true);
     setAuthMethod('telegram');
     const telegramId = tgUser.id.toString();
     const firstName = tgUser.first_name || null;
@@ -581,15 +513,9 @@ export default function Home() {
     return <ErrorScreen error={error} onRetry={handleRetry} />;
   }
 
-  // Not authenticated (no Telegram, no web session) → show auth screen
+  // Not authenticated → show TelegramRequiredScreen
   if (!user) {
-    return (
-      <AuthView
-        onLogin={handleWebLogin}
-        onRegister={handleWebRegister}
-        onOpenTelegram={handleOpenTelegram}
-      />
-    );
+    return <TelegramRequiredScreen />;
   }
 
   // Admin views - strict check

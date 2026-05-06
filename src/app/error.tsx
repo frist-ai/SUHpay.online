@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function Error({
   error,
@@ -15,6 +16,14 @@ export default function Error({
     // Log the error to console for debugging
     console.error('Client error:', error);
   }, [error]);
+
+  const [spinning, setSpinning] = useState(false);
+
+  const handleRetry = () => {
+    setSpinning(true);
+    reset();
+    setTimeout(() => setSpinning(false), 1000);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/30 p-4">
@@ -34,8 +43,8 @@ export default function Error({
           )}
         </div>
         <div className="space-y-2">
-          <Button onClick={reset} className="w-full">
-            <RefreshCw className="h-4 w-4 mr-2" />
+          <Button onClick={handleRetry} className="w-full">
+            <RefreshCw className={cn("h-4 w-4 mr-2", spinning && "animate-spin")} />
             Попробовать снова
           </Button>
           <Button 
