@@ -231,6 +231,12 @@ export async function GET(request: NextRequest) {
       db.order.count({ where }),
     ]);
 
+    // Debug: count orders with customerComment
+    const ordersWithComments = orders.filter((o: any) => o.customerComment).length;
+    if (ordersWithComments > 0) {
+      console.log(`[Orders] GET: ${ordersWithComments}/${orders.length} orders have customerComment`);
+    }
+
     return NextResponse.json({
       orders,
       total,
@@ -464,6 +470,9 @@ export async function POST(request: NextRequest) {
       }
 
       // 6. Create the order + order items
+      // Log comment fields for debugging
+      console.log(`[Orders] Creating order ${orderNumber}, customerComment: "${body.customerComment}", deliveryComment: "${body.deliveryComment}"`);
+      
       const newOrder = await tx.order.create({
         data: {
           orderNumber,
@@ -482,7 +491,7 @@ export async function POST(request: NextRequest) {
           deliveryHouse: body.deliveryHouse,
           deliveryApartment: body.deliveryApartment,
           deliveryPostalCode: body.deliveryPostalCode,
-          deliveryComment: body.deliveryComment,
+          deliveryComment: body.deliveryComment || null,
           deliverySlot: body.deliverySlot || null,
           contactName: body.contactName,
           contactPhone: body.contactPhone,
@@ -492,6 +501,9 @@ export async function POST(request: NextRequest) {
         },
         include: { orderItems: true },
       });
+
+      // Verify comment was saved
+      console.log(`[Orders] Order ${orderNumber} created, saved customerComment: "${newOrder.customerComment}"`);
 
       // 7. Create initial status history entry
       await tx.orderStatusHistory.create({
