@@ -30,6 +30,7 @@ import {
   Copy,
   Check,
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -411,8 +412,37 @@ export function PromosManager() {
       <div className="flex-1 min-h-0 overflow-y-auto pb-14">
         <div className="p-3 space-y-3">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <div className="space-y-4">
+              <div className="rounded-xl border p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-9 w-9 rounded-xl" />
+                  <div className="flex-1 space-y-1">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-3 w-56" />
+                  </div>
+                </div>
+              </div>
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="rounded-xl border p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-6 w-24 font-mono" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <Skeleton className="h-5 w-10" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-7 w-7" />
+                      <Skeleton className="h-7 w-7" />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <>

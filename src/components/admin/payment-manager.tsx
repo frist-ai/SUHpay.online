@@ -31,6 +31,7 @@ import {
   Send,
 } from 'lucide-react';
 import { useShopStore } from '@/stores/shop-store';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
   PaymentSettings,
@@ -223,8 +224,21 @@ export function PaymentManager() {
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-center flex-1">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 max-w-2xl mx-auto">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="rounded-xl border border-l-4 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-11 w-11 rounded-xl" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-5 w-36" />
+                    <Skeleton className="h-4 w-48" />
+                  </div>
+                </div>
+                <Skeleton className="h-5 w-10 rounded-full" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );

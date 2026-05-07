@@ -24,6 +24,7 @@ import {
   Calendar,
   ToggleLeft,
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -533,8 +534,27 @@ export function PollsManager() {
 
                 {/* Polls List */}
                 {loading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="rounded-xl border p-4 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-5 w-48" />
+                          <Skeleton className="h-5 w-16 rounded-full" />
+                        </div>
+                        <div className="space-y-2">
+                          {[...Array(3)].map((_, j) => (
+                            <div key={j} className="flex items-center gap-2">
+                              <Skeleton className="h-4 w-4 rounded-full" />
+                              <Skeleton className="h-4 w-32" />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <Skeleton className="h-3 w-24" />
+                          <Skeleton className="h-3 w-20" />
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ) : polls.length === 0 ? (
                   <motion.div

@@ -36,6 +36,7 @@ import {
   Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
 interface Address {
@@ -280,7 +281,30 @@ export function AddressesView() {
         <div className="p-3 space-y-2">
           {loading ? (
             Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="h-32 bg-muted animate-pulse rounded-xl" />
+              <Card key={i}>
+                <CardContent className="p-4">
+                  <div className="flex gap-3">
+                    <Skeleton className="h-9 w-9 rounded-xl shrink-0" />
+                    <div className="flex-1 min-w-0 space-y-2">
+                      {/* Label + city row */}
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-4 w-20" />
+                      </div>
+                      {/* Address lines */}
+                      <Skeleton className="h-3.5 w-full" />
+                      <Skeleton className="h-3.5 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
+                  {/* Action buttons row */}
+                  <div className="flex gap-2 mt-3 pt-3 border-t">
+                    <Skeleton className="h-8 flex-1 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                  </div>
+                </CardContent>
+              </Card>
             ))
           ) : addresses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">

@@ -33,6 +33,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { cn, pluralize } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
   Select,
@@ -273,8 +274,38 @@ export function AIComboManager() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-4">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => setCurrentView('admin')}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold flex items-center gap-2">AI Combo</h1>
+              <p className="text-sm text-muted-foreground">AI Combo — умный поиск по каталогу</p>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="rounded-xl border p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 rounded-xl" />
+                <div className="flex-1 space-y-1">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+              <div className="space-y-2 pt-2">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

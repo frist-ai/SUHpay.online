@@ -71,6 +71,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { cn, pluralize } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { SortableCategoryTree } from '@/components/admin/sortable-category-tree';
 
@@ -664,8 +665,57 @@ export function CategoriesManager() {
   // Loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        {/* Header skeleton */}
+        <div className="shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-3">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-9 w-9 rounded-md shrink-0" />
+            <div className="flex-1">
+              <Skeleton className="h-5 w-48 mb-1" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+            <Skeleton className="h-9 w-9 rounded-md shrink-0" />
+            <Skeleton className="h-8 w-24 rounded-md" />
+          </div>
+        </div>
+        {/* Tabs skeleton */}
+        <div className="shrink-0 border-b px-4">
+          <Skeleton className="h-10 w-full mt-3 rounded-lg" />
+        </div>
+        {/* Sort + action bar skeleton */}
+        <div className="shrink-0 px-4 pt-3 pb-1">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-24 rounded-md" />
+            <div className="flex-1" />
+            <Skeleton className="h-9 w-24 rounded-md" />
+            <Skeleton className="h-9 w-16 rounded-md" />
+          </div>
+        </div>
+        {/* Category card skeletons */}
+        <div className="flex-1 min-h-0 overflow-y-auto pb-14">
+          <div className="p-3 space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="rounded-lg border p-3">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-9 w-9 rounded-md shrink-0" />
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <Skeleton className="h-4 w-36" />
+                    <Skeleton className="h-3 w-48" />
+                  </div>
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <div className="flex items-center gap-2 mt-2 pt-2 border-t">
+                  <Skeleton className="h-7 w-7 rounded-md" />
+                  <Skeleton className="h-7 w-7 rounded-md" />
+                  <Skeleton className="h-7 w-7 rounded-md" />
+                  <Skeleton className="h-7 w-7 rounded-md" />
+                  <div className="flex-1" />
+                  <Skeleton className="h-7 w-7 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

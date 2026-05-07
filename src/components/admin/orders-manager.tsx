@@ -59,6 +59,7 @@ import {
   PackageCheck,
 } from 'lucide-react';
 import { cn, pluralize, formatRelativeTime } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CopyableOrderNumber } from '@/components/shared/copyable-order-number';
 import { useToast } from '@/hooks/use-toast';
 
@@ -1084,8 +1085,66 @@ export function OrdersManager() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        {/* Header skeleton */}
+        <div className="shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+          <div className="flex items-center gap-2 p-3 pb-2">
+            <Skeleton className="h-9 w-9 rounded-md shrink-0" />
+            <div className="flex-1 min-w-0">
+              <Skeleton className="h-5 w-40 mb-1" />
+              <Skeleton className="h-3 w-28" />
+            </div>
+            <Skeleton className="h-9 w-9 rounded-md shrink-0" />
+            <Skeleton className="h-9 w-9 rounded-md shrink-0" />
+          </div>
+          {/* Search bar */}
+          <div className="px-3 pb-2">
+            <Skeleton className="h-8 w-full rounded-md" />
+          </div>
+          {/* Filter pills */}
+          <div className="px-3 pb-2.5">
+            <div className="flex gap-1 overflow-hidden">
+              <Skeleton className="h-7 w-16 rounded-full" />
+              <Skeleton className="h-7 w-20 rounded-full" />
+              <Skeleton className="h-7 w-24 rounded-full" />
+              <Skeleton className="h-7 w-20 rounded-full" />
+              <Skeleton className="h-7 w-24 rounded-full" />
+            </div>
+          </div>
+        </div>
+        {/* Order card skeletons */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Card key={i} className="overflow-hidden border-l-4">
+              <CardContent className="p-3">
+                {/* Row 1: order number + status badge */}
+                <div className="flex items-center justify-between gap-2">
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                {/* Row 2: customer + delivery + payment + price */}
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <Skeleton className="h-3 w-3 rounded-full shrink-0" />
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-3 w-1" />
+                  <Skeleton className="h-3 w-3 rounded-full shrink-0" />
+                  <Skeleton className="h-3 w-14" />
+                  <Skeleton className="h-3 w-1" />
+                  <Skeleton className="h-3 w-3 rounded-full shrink-0" />
+                  <Skeleton className="h-3 w-14" />
+                  <div className="flex-1" />
+                  <Skeleton className="h-3.5 w-16" />
+                </div>
+                {/* Row 3: items summary + time */}
+                <div className="flex items-center gap-2 mt-1.5">
+                  <Skeleton className="h-3 w-48" />
+                  <div className="flex-1" />
+                  <Skeleton className="h-3 w-12" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }

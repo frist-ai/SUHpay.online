@@ -46,6 +46,7 @@ import {
   FileSpreadsheet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { CopyableOrderNumber } from '@/components/shared/copyable-order-number';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import {
@@ -782,8 +783,36 @@ export function AnalyticsManager() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b p-3">
+          <div className="flex items-center gap-3 mb-3">
+            <Skeleton className="h-9 w-9" />
+            <div className="flex-1 space-y-1">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-3 w-48" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-4" />
+            <Skeleton className="h-9 w-36" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="rounded-xl border p-4 space-y-2">
+                <Skeleton className="h-5 w-5 rounded" />
+                <Skeleton className="h-7 w-20" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            ))}
+          </div>
+          <div className="rounded-xl border p-4 space-y-3">
+            <Skeleton className="h-5 w-40" />
+            <div className="rounded-lg bg-muted h-48 w-full" />
+          </div>
+        </div>
       </div>
     );
   }

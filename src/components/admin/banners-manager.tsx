@@ -81,6 +81,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { format as formatDateFns } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -794,7 +795,49 @@ export function BannersManager() {
       <div className="flex-1 min-h-0 overflow-y-auto pb-14">
         <div className="p-3 space-y-3">
           {loading ? (
-            <div className="flex items-center justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div></div>
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="overflow-hidden rounded-lg border">
+                  <div className="flex">
+                    {/* Drag handle */}
+                    <div className="flex items-center justify-center w-9 shrink-0 border-r bg-muted/30">
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </div>
+                    {/* Image area */}
+                    <div className="relative w-28 sm:w-36 shrink-0 bg-muted">
+                      <Skeleton className="w-full h-full min-h-[80px] rounded-none" />
+                    </div>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 p-3 flex flex-col justify-between">
+                      <div className="space-y-1.5">
+                        <Skeleton className="h-4 w-40" />
+                        <Skeleton className="h-3 w-56" />
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-4 w-16 rounded-full" />
+                          <Skeleton className="h-4 w-20 rounded-full" />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between pt-2 mt-1 border-t">
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-4 w-8 rounded-full" />
+                          <Skeleton className="h-3 w-8" />
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          <Skeleton className="h-7 w-7 rounded-md" />
+                          <Skeleton className="h-7 w-7 rounded-md" />
+                          <Skeleton className="h-7 w-7 rounded-md" />
+                          <Skeleton className="h-7 w-7 rounded-md" />
+                        </div>
+                      </div>
+                    </div>
+                    {/* Status column */}
+                    <div className="flex flex-col items-center justify-center px-2 border-l bg-muted/20">
+                      <Skeleton className="h-4 w-8 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : filteredBanners.length === 0 ? (
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring' as const, stiffness: 300, damping: 25 }}>
               <Card><CardContent className="py-16 text-center">

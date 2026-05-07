@@ -25,6 +25,7 @@ import {
   Ban,
   Search,
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -194,8 +195,26 @@ export function ProductRequestsManager() {
       <div className="flex-1 min-h-0 overflow-y-auto pb-14">
         <div className="p-3 space-y-3">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="rounded-xl border p-3 text-center space-y-2">
+                    <Skeleton className="h-5 w-5 mx-auto rounded" />
+                    <Skeleton className="h-7 w-12 mx-auto" />
+                    <Skeleton className="h-3 w-16 mx-auto" />
+                  </div>
+                ))}
+              </div>
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="rounded-xl border p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-3 w-28" />
+                </div>
+              ))}
             </div>
           ) : selectedRequest ? (
             /* Detail View */

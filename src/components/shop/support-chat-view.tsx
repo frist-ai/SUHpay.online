@@ -20,6 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { hapticFeedback } from '@/lib/telegram';
 
 interface ChatMessage {
@@ -272,18 +273,56 @@ export function SupportChatView() {
   if (loading) {
     return (
       <div className="flex flex-col flex-1 min-h-0">
+        {/* Header */}
         <div className="shrink-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-4 py-2 flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setCurrentView('profile')}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-lg font-bold">Поддержка</h1>
+          <Skeleton className="h-9 w-9 rounded-md" />
+          <div className="flex items-center gap-3 flex-1">
+            <Skeleton className="h-9 w-9 rounded-full" />
+            <div>
+              <Skeleton className="h-5 w-24 mb-1" />
+              <Skeleton className="h-3 w-44" />
+            </div>
+          </div>
+          <Skeleton className="h-9 w-9 rounded-md" />
         </div>
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        {/* Message bubbles skeleton */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          {/* Left-aligned message */}
+          <div className="flex items-end gap-2">
+            <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-16 w-56 rounded-2xl rounded-bl-sm" />
+            </div>
+          </div>
+          {/* Right-aligned message */}
+          <div className="flex items-end gap-2 justify-end">
+            <div className="space-y-1.5 flex flex-col items-end">
+              <Skeleton className="h-12 w-44 rounded-2xl rounded-br-sm" />
+            </div>
+            <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+          </div>
+          {/* Left-aligned message */}
+          <div className="flex items-end gap-2">
+            <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-20 w-48 rounded-2xl rounded-bl-sm" />
+            </div>
+          </div>
+          {/* Right-aligned message */}
+          <div className="flex items-end gap-2 justify-end">
+            <div className="space-y-1.5 flex flex-col items-end">
+              <Skeleton className="h-10 w-32 rounded-2xl rounded-br-sm" />
+            </div>
+            <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+          </div>
+        </div>
+        {/* Input skeleton */}
+        <div className="shrink-0 border-t p-4 bg-background mb-14">
+          <div className="flex gap-2">
+            <Skeleton className="h-10 flex-1 rounded-md" />
+            <Skeleton className="h-10 w-10 rounded-md" />
+          </div>
         </div>
       </div>
     );

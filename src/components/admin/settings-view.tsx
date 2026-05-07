@@ -80,6 +80,7 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { BotManager } from './bot-manager';
 
@@ -690,8 +691,20 @@ export function SettingsView() {
         {activeTab === 'system' && isAdmin && (
           <>
             {configLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="rounded-xl border p-4 space-y-3">
+                    <Skeleton className="h-5 w-40" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                    <div className="flex items-center gap-3 pt-2">
+                      <Skeleton className="h-9 w-24" />
+                      <Skeleton className="h-9 w-32" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : config && (
               <>
