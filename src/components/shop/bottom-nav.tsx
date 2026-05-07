@@ -25,7 +25,7 @@ const adminNavItems = [
 ] as const;
 
 const collectorNavItems = [
-  { id: 'orders-manager', label: 'Заказы', icon: Package },
+  { id: 'orders', label: 'Заказы', icon: Package },
   { id: 'catalog', label: 'Каталог', icon: Home },
   { id: 'cart', label: 'Корзина', icon: ShoppingBag },
   { id: 'profile', label: 'Профиль', icon: User },
