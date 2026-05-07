@@ -745,7 +745,7 @@ export function OrdersView() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <CopyableOrderNumber orderNumber={order.orderNumber} />
-                  {order.customerComment && !isCollector && (
+                  {order.customerComment && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400">

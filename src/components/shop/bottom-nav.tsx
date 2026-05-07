@@ -24,6 +24,13 @@ const adminNavItems = [
   { id: 'profile', label: 'Профиль', icon: User },
 ] as const;
 
+const collectorNavItems = [
+  { id: 'orders-manager', label: 'Заказы', icon: Package },
+  { id: 'catalog', label: 'Каталог', icon: Home },
+  { id: 'cart', label: 'Корзина', icon: ShoppingBag },
+  { id: 'profile', label: 'Профиль', icon: User },
+] as const;
+
 export function BottomNav() {
   const { currentView, setCurrentView, cartCount, isAdmin, isCollector, user } = useShopStore();
   
@@ -34,16 +41,19 @@ export function BottomNav() {
   const activeOrdersCount = useActiveOrdersCount(user?.id, isCollector);
 
   const activeNav = useMemo(() => {
-    if (currentView === 'admin' || currentView === 'products-manager' || currentView === 'orders-manager' || currentView === 'settings') {
+    if (isAdmin && (currentView === 'admin' || currentView === 'products-manager' || currentView === 'settings')) {
       return 'admin';
     }
     if (currentView === 'cart' || currentView === 'checkout') {
       return 'cart';
     }
+    if (currentView === 'orders-manager') {
+      return isCollector ? 'orders-manager' : 'admin';
+    }
     return currentView;
-  }, [currentView]);
+  }, [currentView, isAdmin, isCollector]);
   
-  const items = isAdmin ? adminNavItems : navItems;
+  const items = isAdmin ? adminNavItems : (isCollector ? collectorNavItems : navItems);
 
   const handleClick = useCallback((id: typeof currentView) => {
     setCurrentView(id);

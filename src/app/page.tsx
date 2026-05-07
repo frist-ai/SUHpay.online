@@ -262,6 +262,7 @@ export default function Home() {
     selectedProductId, 
     setSelectedProduct, 
     isAdmin,
+    isCollector,
     setIsAdmin,
     setIsCollector,
     setAuthMethod,
@@ -469,7 +470,7 @@ export default function Home() {
     if (currentView === 'admin' && isAdmin) return <AdminDashboard />;
     if (currentView === 'products-manager' && isAdmin) return <ProductsManager />;
     if (currentView === 'categories-manager' && isAdmin) return <CategoriesManager />;
-    if (currentView === 'orders-manager' && isAdmin) return <OrdersManager />;
+    if (currentView === 'orders-manager' && (isAdmin || isCollector)) return <OrdersManager />;
     if (currentView === 'stock-manager' && isAdmin) return <StockManager />;
     if (currentView === 'banners-manager' && isAdmin) return <BannersManager />;
     if (currentView === 'broadcasts-manager' && isAdmin) return <BroadcastsManager />;
@@ -518,8 +519,9 @@ export default function Home() {
     return <TelegramRequiredScreen />;
   }
 
-  // Admin views - strict check
-  if (isAdminView && !isAdmin) {
+  // Admin views - strict check (collectors can access orders-manager)
+  const isForbiddenAdminView = isAdminView && !isAdmin && !(isCollector && currentView === 'orders-manager');
+  if (isForbiddenAdminView) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="text-center space-y-4">

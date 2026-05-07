@@ -1484,17 +1484,28 @@ export function CheckoutView() {
                       <p className="text-xs text-destructive mt-1">{validationErrors.phone}</p>
                     )}
                   </div>
-                  <div>
-                    <Label htmlFor="customerComment">Комментарий к заказу</Label>
-                    <textarea
-                      id="customerComment"
-                      value={formData.customerComment || ''}
-                      onChange={(e) => handleInputChange('customerComment', e.target.value)}
-                      placeholder="Пожелания к заказу, аллергии..."
-                      className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
-                      rows={3}
-                    />
+                </CardContent>
+              </Card>
+
+              {/* Customer comment card — separate for visibility */}
+              <Card className="border-orange-200 dark:border-orange-800/50 bg-orange-50/50 dark:bg-orange-950/10">
+                <CardContent className="p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-900/30">
+                      <MessageSquare className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    <Label htmlFor="customerCommentCard" className="text-sm font-medium text-orange-700 dark:text-orange-400">
+                      Комментарий к заказу
+                    </Label>
                   </div>
+                  <textarea
+                    id="customerCommentCard"
+                    value={formData.customerComment || ''}
+                    onChange={(e) => handleInputChange('customerComment', e.target.value)}
+                    placeholder="Пожелания к заказу, передать привет, аллергии..."
+                    className="flex w-full rounded-md border border-orange-200 dark:border-orange-800/50 bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                    rows={3}
+                  />
                 </CardContent>
               </Card>
               </motion.div>
@@ -1592,6 +1603,21 @@ export function CheckoutView() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Comment summary on payment step */}
+                {formData.customerComment && (
+                  <Card className="bg-orange-50/50 dark:bg-orange-950/10 border-orange-200 dark:border-orange-800/50">
+                    <CardContent className="p-3">
+                      <div className="flex items-start gap-2">
+                        <MessageSquare className="h-4 w-4 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" />
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium text-orange-700 dark:text-orange-400 mb-0.5">Комментарий к заказу</p>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">{formData.customerComment}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Payment methods */}
                 <Card>
