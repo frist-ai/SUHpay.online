@@ -144,16 +144,16 @@ function generateAdminOrderMessage(order: OrderData, user?: UserData): string {
   // Separator
   lines.push('──────────────');
 
-  // Delivery time & comments section for admins
-  if (order.deliverySlot) {
+  // ⬇️ COMMENTS — prominently placed right after items, before total
+  if (order.customerComment) {
     lines.push('');
-    lines.push(`🕐 <i>Время доставки: ${order.deliverySlot}</i>`);
+    lines.push(`💬 <b>Комментарий:</b> <i>${order.customerComment}</i>`);
   }
   if (order.deliveryComment) {
     lines.push(`🔑 <i>Доставка: ${order.deliveryComment}</i>`);
   }
-  if (order.customerComment) {
-    lines.push(`💬 <i>Комментарий: ${order.customerComment}</i>`);
+  if (order.deliverySlot) {
+    lines.push(`🕐 <i>Время доставки: ${order.deliverySlot}</i>`);
   }
 
   // Total
@@ -420,8 +420,19 @@ function generateCollectorNewOrderMessage(order: OrderData): string {
   if (order.deliverySlot) {
     lines.push(`🕐 ${order.deliverySlot}`);
   }
+  if (order.deliveryComment) {
+    lines.push(`🔑 Доставка: ${order.deliveryComment}`);
+  }
   // Payment status
   lines.push(`💳 ${getPaymentStatusLabel(order.paymentStatus)}`);
+
+  // Comments section — prominently displayed for collectors
+  if (order.customerComment) {
+    lines.push('');
+    lines.push('──────────────');
+    lines.push(`💬 <b>Комментарий покупателя:</b>`);
+    lines.push(`<i>${order.customerComment}</i>`);
+  }
 
   // Total
   lines.push('──────────────');
@@ -458,6 +469,13 @@ function generateCollectorStatusMessage(order: OrderData, newStatus: string): st
     }
     if (order.deliveryCity) {
       lines.push(`📍 ${order.deliveryCity}`);
+    }
+    // Show customer comment when confirming/processing so collector sees it
+    if (order.customerComment) {
+      lines.push(`💬 ${order.customerComment}`);
+    }
+    if (order.deliveryComment) {
+      lines.push(`🔑 Доставка: ${order.deliveryComment}`);
     }
   }
 

@@ -368,6 +368,14 @@ function OrderCard({
             <span className="font-semibold text-xs text-foreground">{formatPrice(order.total)}</span>
           </div>
 
+          {/* Row 2.5: Comment preview — visible without expanding */}
+          {order.customerComment && (
+            <div className="flex items-start gap-1.5 mt-1.5 text-[11px] text-orange-700 dark:text-orange-400">
+              <MessageSquare className="h-3 w-3 shrink-0 mt-0.5" />
+              <span className="truncate">{order.customerComment}</span>
+            </div>
+          )}
+
           {/* Row 3: Item summary, time, expand arrow */}
           <div className="flex items-center gap-2 mt-1.5">
             <span className="text-[10px] text-muted-foreground truncate">
@@ -589,13 +597,26 @@ function OrderCard({
                 <Separator />
 
                 {/* ── Customer Comment ──────────────────────────────────────── */}
-                {order.customerComment && (
-                  <div className="bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800/50 rounded-lg p-2.5">
-                    <div className="flex items-center gap-1.5 text-xs font-medium text-orange-700 dark:text-orange-400 mb-0.5">
-                      <MessageSquare className="h-3 w-3" />
-                      Комментарий клиента
-                    </div>
-                    <p className="text-xs text-orange-600 dark:text-orange-300">{order.customerComment}</p>
+                {(order.customerComment || order.deliveryComment) && (
+                  <div className="space-y-2">
+                    {order.customerComment && (
+                      <div className="bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800/50 rounded-lg p-2.5">
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-orange-700 dark:text-orange-400 mb-0.5">
+                          <MessageSquare className="h-3 w-3" />
+                          Комментарий клиента
+                        </div>
+                        <p className="text-xs text-orange-600 dark:text-orange-300 whitespace-pre-wrap break-words">{order.customerComment}</p>
+                      </div>
+                    )}
+                    {order.deliveryComment && (
+                      <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/50 rounded-lg p-2.5">
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 mb-0.5">
+                          <MapPin className="h-3 w-3" />
+                          Комментарий к доставке
+                        </div>
+                        <p className="text-xs text-blue-600 dark:text-blue-300 whitespace-pre-wrap break-words">{order.deliveryComment}</p>
+                      </div>
+                    )}
                   </div>
                 )}
 
