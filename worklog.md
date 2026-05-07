@@ -53,3 +53,24 @@ Stage Summary:
 - Customer comments visible in all views (OrdersManager for admin/collector, OrdersView for customers)
 - Comment input more prominent: separate orange card with MessageSquare icon
 - Comment preview shown on payment step before order confirmation
+---
+Task ID: 1
+Agent: main
+Task: Fix collector (сборщик) seeing all orders including archive
+
+Work Log:
+- Cloned repo from GitHub
+- Investigated the order filtering flow: bottom-nav → page.tsx → OrdersView/OrdersManager
+- Found root cause: collectorNavItems in bottom-nav.tsx used `id: 'orders-manager'` which navigated to the ADMIN OrdersManager component
+- Admin OrdersManager fetches ALL orders (`/api/orders` without filters), showing shipped/delivered/cancelled orders
+- Shop OrdersView (correct component) has `fetchAllOrders` with `excludeStatuses=shipped,delivered,cancelled` and tabs "Мои"/"Все"
+- Also found badge bug: badge check used `item.id === 'orders'` but collector nav had `id: 'orders-manager'`, so badge never showed
+- Fixed: Changed collectorNavItems from `{ id: 'orders-manager' }` to `{ id: 'orders' }`
+- Ran lint — no new errors
+- Committed and pushed to GitHub
+
+Stage Summary:
+- File changed: `src/components/shop/bottom-nav.tsx` (1 line change)
+- Commit: `1f3b1b5` - "fix: сборщик теперь видит только активные заказы вместо всех (включая архив)"
+- Pushed to `main` branch
+- The shop OrdersView already had correct filtering — the issue was just navigation pointing to wrong component
