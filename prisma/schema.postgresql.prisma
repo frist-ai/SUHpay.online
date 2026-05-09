@@ -466,7 +466,7 @@ model PaymentTransaction {
 
 model User {
   id               String              @id @default(cuid())
-  telegramId       String              @unique
+  telegramId       String?             @unique
   username         String?
   firstName        String?
   lastName         String?
